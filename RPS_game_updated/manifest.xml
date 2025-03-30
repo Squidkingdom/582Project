@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package uuid="rps_game_updated-bd3af0">
+ <names>
+  <name lang="en_US">RPS_game_updated</name>
+ </names>
+ <supportedLanguages>
+  <language>en_US</language>
+ </supportedLanguages>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path="Rock Paper Scissor">
+   <nature>interactive</nature>
+   <names>
+    <name lang="en_US">RPS</name>
+   </names>
+   <permissions/>
+  </behaviorContent>
+  <behaviorContent path="HandRecognition">
+   <nature>interactive</nature>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+</package>
