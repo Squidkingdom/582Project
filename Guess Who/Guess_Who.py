@@ -1,9 +1,10 @@
+# Import necessary modules
 import random
 
+# Define a Character class to hold attributes for each character
 class character:
-    # Maybe add hair_colored for characters with multicolored hair
-    # Maybe add has_hair for people like AL
     def __init__(self, name, gender, hair_color, eye_color, hair_short, facial_hair, head_accessory, glasses, head_cover, earring):
+        # Assign each attribute to the character
         self.name = name 
         self.gender = gender 
         self.hair_color = hair_color
@@ -15,11 +16,10 @@ class character:
         self.head_cover = head_cover
         self.earring = earring
 
+# Define a list of character instances with their respective attributes
 characters = [
     character("AMY", "FEMALE", "BLACK", "BROWN", True, False, True, True, False, False),
-    # For AL maybe do something for hair
     character("AL", "MALE", False, "GREEN", False, True, False, True, False, False),
-    # Check Sam facial_hair
     character("SAM", "MALE", "BLACK", "GREEN", True, True, True, False, True, False),
     character("SOFIA", "FEMALE", "BROWN", "GREEN", True, False, False, False, False, True),
     character("OLIVIA", "FEMALE", "BLACK", "BROWN", False, False, False, False, False, False),
@@ -27,7 +27,6 @@ characters = [
     character("DAVID", "MALE", "BLOND", "BROWN", True, True, True, False, True, False),
     character("FARAH", "FEMALE", "BLACK", "GREEN", False, False, False, False, False, False),
     character("BEN", "MALE", "BROWN", "BROWN", True, False, False, True, False, False),
-    # IDK if you consider this guy's hair short
     character("JORDAN", "MALE", "BLACK", "BROWN", False, True, False, False, False, True),
     character("LAURA", "FEMALE", "BLACK", "GREEN", False, False, False, False, False, True),
     character("LEO", "MALE", "SILVER", "BROWN", True, True, False, False, False, False),
@@ -37,7 +36,6 @@ characters = [
     character("LILY", "FEMALE", "BROWN", "GREEN", False, False, True, False, True, False),
     character("JOE", "MALE", False, "BROWN", False, True, True, True, False, False),
     character("GABE", "MALE", "BLACK", "BROWN", True, False, False, False, False, False),
-    # Look at eric hair color
     character("ERIC", "MALE", "BLACK", "BLUE", True, False, False, False, False, False),
     character("EMMA", "FEMALE", "ORANGE", "BROWN", False, False, False, False, False, False),
     character("CARMEN", "FEMALE", "SILVER", "BROWN", True, False, True, False, False, True),
@@ -46,8 +44,7 @@ characters = [
     character("KATIE", "FEMALE", "BLOND", "BLUE", False, False, True, False, True, False)
 ]
 
-# Define our question templates.
-# Each key maps to an attribute and a prompt template.
+# Define question types the computer can ask
 question_types = {
     "gender": {
         "type": "string",
@@ -96,41 +93,46 @@ question_types = {
     }
 }
 
-# Global set to remember boolean questions that have already been asked.
+# Set of boolean questions already asked (to avoid duplicates)
 asked_boolean = set()
 
-# Function to randomly choose the computer's secret character.
+# Function for the computer to randomly pick its secret character
 def pick_cpu_player():
     return random.choice(characters)
 
-# Computer's turn: check for elimination questions and skip repeated boolean questions.
+# Function for the computer to take its turn
 def computer_turn(candidates):
     global asked_boolean
 
-    # Final guess if only one candidate remains.
+    # If only one candidate left, computer makes a guess
     if len(candidates) == 1:
         guess = candidates[0]
         print(f"\nComputer: Is your character {guess.name}?")
         user_response = input("Yes/No: ").strip().lower()
         if user_response.startswith("y"):
             print("Computer: I win! (You lose!)")
-            return None  # End of game.
+            return None  # Game over
         else:
             print("Computer: Hmm... That's odd. Let's continue anyway.")
             return candidates
 
-    available_questions = []  # List holds tuples: (key, chosen_value or None, prompt, question_data)
+    available_questions = []  # List to store potential questions
 
+    # Loop through all question types
     for key in question_types:
         q_data = question_types[key]
         attr = q_data["attribute"]
+
+        # If boolean question
         if q_data["type"] == "boolean":
             if key in asked_boolean:
-                continue  # Skip if already asked.
+                continue  # Skip if already asked
             count_yes = sum(1 for cand in candidates if getattr(cand, attr) is True)
             count_no = len(candidates) - count_yes
             if count_yes > 0 and count_no > 0:
                 available_questions.append((key, None, q_data["prompt"], q_data))
+
+        # If string (color, gender, etc.)
         else:
             if key == "gender":
                 possible_values = ["MALE", "FEMALE"]
@@ -149,7 +151,7 @@ def computer_turn(candidates):
                     prompt = q_data["prompt"].format(value=value)
                     available_questions.append((key, value, prompt, q_data))
 
-    # No elimination question found: fallback to a guess.
+    # If no good elimination question, computer makes a guess
     if not available_questions:
         guess = random.choice(candidates)
         print(f"\nComputer: Is your character {guess.name}?")
@@ -161,15 +163,19 @@ def computer_turn(candidates):
             print("Computer: Hmm... That's odd. Let's continue anyway.")
             return candidates
 
+    # Randomly pick one question
     chosen_question = random.choice(available_questions)
     key, chosen_value, prompt, q_data = chosen_question
 
+    # Mark boolean questions as asked
     if q_data["type"] == "boolean":
         asked_boolean.add(key)
 
+    # Ask the question
     print("\nComputer asks:", prompt)
     user_ans = input("Yes/No: ").strip().lower()
 
+    # Filter candidates based on answer
     if q_data["type"] == "boolean":
         if user_ans.startswith("y"):
             new_candidates = [cand for cand in candidates if getattr(cand, q_data["attribute"]) is True]
@@ -184,10 +190,11 @@ def computer_turn(candidates):
                               if not (isinstance(getattr(cand, q_data["attribute"]), str) and getattr(cand, q_data["attribute"]).upper() == chosen_value)]
     return new_candidates
 
-# Answering user questions about the computer's character: attribute-based questions are handled here.
+# Answering user questions about the computer's chosen character
 def answer_user_question(cpu_character, question):
     lower_question = question.lower().strip()
-    # Gender question.
+
+    # Check for gender questions
     if "male" in lower_question or "female" in lower_question:
         if "male" in lower_question and cpu_character.gender.upper() == "MALE":
             return "Yes"
@@ -195,7 +202,8 @@ def answer_user_question(cpu_character, question):
             return "Yes"
         else:
             return "No"
-    # Hair color question.
+
+    # Check for hair color questions
     if "hair" in lower_question and any(color in lower_question for color in ["black", "brown", "blond", "silver", "orange"]):
         for color in ["BLACK", "BROWN", "BLOND", "SILVER", "ORANGE"]:
             if color.lower() in lower_question:
@@ -203,7 +211,8 @@ def answer_user_question(cpu_character, question):
                     return "Yes"
                 else:
                     return "No"
-    # Eye color question.
+
+    # Check for eye color questions
     if "eyes" in lower_question:
         for color in ["BROWN", "GREEN", "BLUE"]:
             if color.lower() in lower_question:
@@ -211,7 +220,8 @@ def answer_user_question(cpu_character, question):
                     return "Yes"
                 else:
                     return "No"
-    # Check for short hair.
+
+    # Check for boolean features
     if "short" in lower_question and "hair" in lower_question:
         return "Yes" if cpu_character.hair_short else "No"
     if "facial hair" in lower_question:
@@ -225,34 +235,34 @@ def answer_user_question(cpu_character, question):
     if "earring" in lower_question:
         return "Yes" if cpu_character.earring else "No"
     
+    # Default fallback
     return "I don't understand the question."
 
-# The main game loop.
+# Main gameplay loop
 def play_game():
     global asked_boolean
-    asked_boolean = set()  # Reset between games.
+    asked_boolean = set()  # Reset asked questions
 
     print("Welcome to Guess Who!")
     input("Click enter once you have selected your secret character (from the list).")
     
-    # Computer selects its secret character.
+    # Computer picks a secret character
     cpu_character = pick_cpu_player()
-    user_candidates = characters.copy()  # The candidate list maintained by the computer.
-    
-    # The game loop alternates turns.
+    user_candidates = characters.copy()
+
+    # Game loop
     while True:
-        # --- Computer's Turn ---
+        # Computer's turn
         updated_candidates = computer_turn(user_candidates)
         if updated_candidates is None:
-            break  # Computer wins.
+            break
         user_candidates = updated_candidates
         
         if len(user_candidates) == 0:
             print("There are no characters left. Something went wrong with the elimination. Game over.")
             break
         
-        # --- User's Turn ---
-        # The protocol: if the user wants to guess the character, they must type "I'm ready to make a guess."
+        # User's turn
         while True:
             print("\nYour turn! Ask me a yes/no question about my character, or if you're ready to guess, type \"I'm ready to make a guess.\"")
             user_input = input("Your input: ").strip()
@@ -264,21 +274,22 @@ def play_game():
                     return
                 else:
                     print("No, that's not my character.")
-                break  # End this turn after a guess (correct or not).
+                break
             else:
-                # Process as an attribute question.
+                # Process question
                 answer = answer_user_question(cpu_character, user_input)
                 if answer == "I don't understand the question.":
                     print(answer, "Please rephrase your question.")
-                    continue  # Re-prompt the user if the question wasn't understood.
+                    continue
                 else:
                     print("Computer answers:", answer)
-                break  # End user's turn.
-                
-# Main entry point.
+                break
+
+# Entry point
 def main():
     play_game()
 
+# Start the game
 if __name__ == "__main__":
     main()
 
