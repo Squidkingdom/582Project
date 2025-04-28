@@ -1,7 +1,11 @@
 class MyClass(GeneratedClass):
     def __init__(self):
+    # Initialize the base class
         GeneratedClass.__init__(self)
+        # Create ALMemory proxy to read/write robot memory
         self.memory = ALProxy("ALMemory")
+        # Define character features:
+        # Each inner list represents a character's features (Booleans) + their name at the end
         self.characterFeatures =[
         [False, True, True, False, False, False, False, True, False, False, False, False, True, False, False, False, False, True, False, False, False, False, True, False, False, True, "Amy"],
 
@@ -51,6 +55,8 @@ class MyClass(GeneratedClass):
 
         [False, True, False, False, True, False, False, False, True, False, False, False, False, False, True, True, False, False, False, False, True, False, False, False, False, True, "Caity"]
         ]
+
+        # Define a dictionary mapping feature names to their index in the characterFeatures list
         self.featureToInt = {
         "male": 0,
         "female": 1,
@@ -91,7 +97,8 @@ class MyClass(GeneratedClass):
         "right": 25,
         "name": 26
         }
-        
+
+        # Human-readable feature list (optional usage)
         self.features = [
             'male',          # 0
             'female',        # 1
@@ -121,6 +128,8 @@ class MyClass(GeneratedClass):
             'right',         # 25
             'name'           # 26
         ]
+
+        # List of character names
         self.name = ["Amy", "Al", "Sam", "Sofia", "Olivia", "Mike", "David", "Farah", "Ben", "Jordan", "Laura", "Leo", "Liz", "Mia", "Nick", "Lily", "Joe", "Gabe", "Eric", "Emma", "Carmen", "Daniel", "Rachel", "Katie"]
 
     def onLoad(self):
@@ -132,9 +141,12 @@ class MyClass(GeneratedClass):
         pass
 
     def onInput_onStart(self, p):
-        userResponse = p
+        # This method is called when the input is triggered
+        userResponse = p # Read the input parameter
+        # Depending on the user's "yes" or "no" answer, eliminate characters
         if userResponse.toUpper() == "YES":
             self.elim(
+        # (Incomplete - would call self.elim() differently for NO)
         elif userResponse.toUpper() == "NO":
         
         pass
@@ -144,13 +156,23 @@ class MyClass(GeneratedClass):
         self.onStopped() #activate the output of the box
 
     def elim(self, feat, ans):
-        self.logger.info(feat)
-        feat_idx = self.featureToInt[feat]  # Get the feature index from string
+        # Eliminate characters based on feature `feat` and answer `ans`
+        self.logger.info(feat)  # Log the feature being evaluated
+
+        # Get the feature index based on the string (e.g., "black hair" → 2)
+        feat_idx = self.featureToInt[feat]
+
+        # Loop through all characters
         for i, person in enumerate(self.characterFeatures):
             if person[feat_idx] != ans:
-                self.memory.removeData(self.name[i])
-                self.memory.insertData(self.name[i], 0)
-                self.logger.info((str(self.name[i])) + " " + str(self.memory.getData(self.name[i])))
-                #row = i // 8/ #possible issue
-                #col = i % 8
-                #gState[row][col] = "0"
+                # If the character's feature does not match the answer, eliminate
+                self.memory.removeData(self.name[i])  # Remove old data for the character
+                self.memory.insertData(self.name[i], 0)  # Set character's state to eliminated (0)
+                
+                # Log which character was eliminated
+                self.logger.info(str(self.name[i]) + " " + str(self.memory.getData(self.name[i])))
+
+                # (Old code you commented out about gState row/column updating)
+                # row = i // 8  # Would calculate grid row
+                # col = i % 8   # Would calculate grid column
+                # gState[row][col] = "0"
