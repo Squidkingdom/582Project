@@ -1,3 +1,5 @@
+# filler file, full comments in Nao and Player Turn response files
+
 gState = [
 	["1"] * 8,
 	["1"] * 8,
